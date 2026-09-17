@@ -2,12 +2,13 @@ import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CaptionStyle } from "@/lib/schema";
 import {
+  activeBlockAt,
   activeLineAt,
-  boxMetrics,
   captionTextStyle,
   groupTimedLines,
   normalizeWord,
   plateStyle,
+  stackGap,
   wrapWords,
 } from "@/lib/caption-layout";
 import type { TimedWord } from "@/lib/transcribe";
@@ -24,8 +25,7 @@ function CaptionBlock({
   accent: string;
 }) {
   const wordStyle = captionTextStyle(style, scale);
-  const boxed = style["has-box"];
-  const gap = boxed ? boxMetrics(style, scale).gap : 0;
+  const gap = stackGap(style, scale);
 
   return (
     <div className="mx-auto flex flex-col items-center" style={{ gap }}>
@@ -93,32 +93,48 @@ export function LiveCaptionOverlay({
   frameHeight: number;
 }) {
   const lines = groupTimedLines(words, style["max-words-per-line"]);
-  const line = activeLineAt(lines, time);
-  if (!line) return null;
+  const visible = style["has-box"]
+    ? (() => {
+        const line = activeLineAt(lines, time);
+        return line ? [line] : [];
+      })()
+    : activeBlockAt(lines, time, 2);
+  if (!visible.length) return null;
   const scale = frameHeight / 1920;
-  const current = line.words.find((w) => time >= w.start && time <= w.end + 0.08);
   const wordStyle = captionTextStyle(style, scale);
-  const highlightLine = Boolean(current);
+  const gap = stackGap(style, scale);
 
   return (
     <div
       className="pointer-events-none absolute inset-x-0 flex justify-center px-3"
       style={{ top: `${(style.y / 1920) * 100}%` }}
     >
-      <span className="inline-block max-w-full" style={plateStyle(style, scale, highlightLine)}>
-        {line.words.map((word, i) => (
-          <span
-            key={`${word.start}-${i}`}
-            style={{
-              ...wordStyle,
-              color: current === word ? style["word-color"] : style["line-color"],
-            }}
-          >
-            {word.text}
-            {i < line.words.length - 1 ? " " : ""}
-          </span>
-        ))}
-      </span>
+      <div className="flex w-full flex-col items-center" style={{ gap }}>
+        {visible.map((line, li) => {
+          const current = line.words.find((w) => time >= w.start && time <= w.end + 0.08);
+          const highlightLine = Boolean(current);
+          return (
+            <span
+              key={`${line.start}-${li}`}
+              className="inline-block max-w-full"
+              style={plateStyle(style, scale, highlightLine)}
+            >
+              {line.words.map((word, i) => (
+                <span
+                  key={`${word.start}-${i}`}
+                  style={{
+                    ...wordStyle,
+                    color: current === word ? style["word-color"] : style["line-color"],
+                  }}
+                >
+                  {word.text}
+                  {i < line.words.length - 1 ? " " : ""}
+                </span>
+              ))}
+            </span>
+          );
+        })}
+      </div>
     </div>
   );
 }

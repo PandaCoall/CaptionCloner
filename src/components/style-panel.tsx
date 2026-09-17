@@ -85,6 +85,9 @@ export function StylePanel({
             className="mt-1 w-full rounded-md bg-subtle px-3 py-2 text-sm text-fg shadow-[var(--shadow-border)] outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </label>
+        <p className="text-xs leading-relaxed text-muted">
+          Two words per line, unless a word is 11+ letters — those keep their own line so nothing clips.
+        </p>
         <label className="block text-xs font-medium uppercase tracking-wider text-muted">
           Highlight word
           <Input value={highlight} onChange={(e) => onHighlightChange(e.target.value)} className="mt-1" />

@@ -100,18 +100,18 @@ export const BOXED_GRADIENT =
   "linear-gradient(160deg, #16122e 0%, #3a1233 48%, #6b1528 100%)";
 
 export const DEFAULT_STYLE: CaptionStyle = {
-  "font-family": "Montserrat",
-  "font-size": 72,
+  "font-family": "Anton",
+  "font-size": 78,
   "line-color": "#FFFFFF",
-  "word-color": "#F4E27C",
+  "word-color": "#F5E600",
   "outline-color": "#000000",
-  "outline-width": 6,
+  "outline-width": 8,
   "shadow-color": "#000000",
-  "shadow-offset": 4,
-  "max-words-per-line": 3,
+  "shadow-offset": 3,
+  "max-words-per-line": 2,
   position: "custom-position",
   x: 0,
-  y: 1400,
+  y: 920,
   "has-box": false,
   "box-color": "#000000",
   "word-box-color": "#E31C23",
@@ -171,8 +171,8 @@ export const BUILT_IN_LOOKS: StyleLook[] = [
     name: "Outline type",
     style: DEFAULT_STYLE,
     background: FALLBACK_GRADIENT,
-    caption: "I DIDNT COME JUST TO SELL",
-    highlight: "SELL",
+    caption: "YOUR PRIVATE\nVIEWING TODAY",
+    highlight: "VIEWING",
   },
   {
     id: "bars",
@@ -301,8 +301,8 @@ export function coerceExtracted(raw: unknown): unknown {
   next["has-box"] = boxed === true;
 
   if (typeof next["font-size"] !== "number") next["font-size"] = 72;
-  if (typeof next["max-words-per-line"] !== "number") next["max-words-per-line"] = next["has-box"] ? 2 : 3;
-  if (typeof next.y !== "number") next.y = next["has-box"] ? 980 : 1400;
+  if (typeof next["max-words-per-line"] !== "number") next["max-words-per-line"] = 2;
+  if (typeof next.y !== "number") next.y = next["has-box"] ? 980 : 920;
   if (typeof next["line-color"] !== "string") next["line-color"] = "#FFFFFF";
   if (typeof next["word-color"] !== "string") next["word-color"] = next["line-color"];
   if (typeof next["outline-color"] !== "string") next["outline-color"] = "#000000";

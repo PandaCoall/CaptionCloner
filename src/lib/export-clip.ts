@@ -1,5 +1,6 @@
 import type { CaptionStyle } from "./schema";
 import {
+  activeBlockAt,
   activeLineAt,
   boxMetrics,
   groupTimedLines,
@@ -130,28 +131,26 @@ function drawCaptionStack(
 function drawCaptions(
   ctx: CanvasRenderingContext2D,
   style: CaptionStyle,
-  line: CaptionLine | null,
+  lines: CaptionLine[],
   time: number,
   canvasW: number,
   canvasH: number,
 ) {
-  if (!line) return;
+  const visible = style["has-box"]
+    ? [activeLineAt(lines, time)].filter((line): line is CaptionLine => Boolean(line))
+    : activeBlockAt(lines, time, 2);
+  if (!visible.length) return;
   const scale = canvasH / 1920;
-  const current = line.words.find((w) => time >= w.start && time <= w.end + 0.05);
-  const parts = line.words.map((w) => ({
-    text: w.text.toUpperCase(),
-    active: Boolean(current && w === current),
-  }));
+  let y = (style.y / 1920) * canvasH;
   ctx.save();
-  drawLine(
-    ctx,
-    style,
-    parts,
-    Boolean(current),
-    canvasW,
-    (style.y / 1920) * canvasH,
-    scale,
-  );
+  for (const line of visible) {
+    const current = line.words.find((w) => time >= w.start && time <= w.end + 0.05);
+    const parts = line.words.map((w) => ({
+      text: w.text.toUpperCase(),
+      active: Boolean(current && w === current),
+    }));
+    y += drawLine(ctx, style, parts, Boolean(current), canvasW, y, scale);
+  }
   ctx.restore();
 }
 
@@ -411,7 +410,7 @@ export async function exportCaptionedClip(params: {
           drawCaptions(
             ctx,
             params.style,
-            activeLineAt(lines, video.currentTime),
+            lines,
             video.currentTime,
             w,
             h,

@@ -8,24 +8,62 @@ export type CaptionLine = {
   end: number;
 };
 
+const WIDE_WORD = 11;
+const PAIR_WITH_WIDE = 8;
+const MAX_LINE_CHARS = 18;
+
+export function letterCount(value: string): number {
+  return value.replace(/[^\p{L}\p{N}]+/gu, "").length;
+}
+
+function lineChars(words: string[]): number {
+  if (!words.length) return 0;
+  return words.reduce((n, word) => n + letterCount(word), 0) + Math.max(0, words.length - 1);
+}
+
+export function shouldStartNewLine(
+  current: string[],
+  next: string,
+  maxPerLine: number,
+): boolean {
+  if (!current.length) return false;
+  const limit = Math.max(1, maxPerLine);
+  if (current.length >= limit) return true;
+  const nextLen = letterCount(next);
+  if (lineChars(current) + 1 + nextLen > MAX_LINE_CHARS) return true;
+  const hasWide = current.some((word) => letterCount(word) >= WIDE_WORD);
+  if (hasWide && nextLen >= PAIR_WITH_WIDE) return true;
+  if (nextLen >= WIDE_WORD && current.some((word) => letterCount(word) >= PAIR_WITH_WIDE)) {
+    return true;
+  }
+  return false;
+}
+
+function packWordStrings(words: string[], maxPerLine: number): string[][] {
+  const lines: string[][] = [];
+  let chunk: string[] = [];
+  for (const word of words) {
+    if (shouldStartNewLine(chunk, word, maxPerLine)) {
+      lines.push(chunk);
+      chunk = [];
+    }
+    chunk.push(word);
+  }
+  if (chunk.length) lines.push(chunk);
+  return lines;
+}
+
 export function wrapWords(text: string, maxPerLine: number): string[][] {
   const normalized = text.replace(/\r\n/g, "\n").trim();
   if (!normalized) return [[""]];
-  const limit = Math.max(1, maxPerLine);
 
-  if (normalized.includes("\n")) {
-    return normalized
-      .split("\n")
-      .map((line) => line.trim().split(/\s+/).filter(Boolean))
-      .filter((line) => line.length > 0);
-  }
+  const packed = normalized
+    .split("\n")
+    .map((line) => line.trim().split(/\s+/).filter(Boolean))
+    .filter((line) => line.length > 0)
+    .flatMap((line) => packWordStrings(line, maxPerLine));
 
-  const words = normalized.split(/\s+/).filter(Boolean);
-  const lines: string[][] = [];
-  for (let i = 0; i < words.length; i += limit) {
-    lines.push(words.slice(i, i + limit));
-  }
-  return lines.length ? lines : [[""]];
+  return packed.length ? packed : [[""]];
 }
 
 function toLine(chunk: TimedWord[]): CaptionLine {
@@ -37,13 +75,16 @@ function toLine(chunk: TimedWord[]): CaptionLine {
 }
 
 export function groupTimedLines(words: TimedWord[], maxPerLine: number): CaptionLine[] {
-  const limit = Math.max(1, maxPerLine);
   const lines: CaptionLine[] = [];
   let chunk: TimedWord[] = [];
   for (const word of words) {
     const prev = chunk[chunk.length - 1];
     const pause = prev ? word.start - prev.end : 0;
-    if (chunk.length >= limit || (chunk.length > 0 && pause > 0.55)) {
+    const labels = chunk.map((item) => item.text);
+    if (
+      (chunk.length > 0 && pause > 0.55) ||
+      shouldStartNewLine(labels, word.text, maxPerLine)
+    ) {
       lines.push(toLine(chunk));
       chunk = [];
     }
@@ -65,6 +106,20 @@ export function activeLineAt(lines: CaptionLine[], time: number): CaptionLine | 
   return best;
 }
 
+export function activeBlockAt(
+  lines: CaptionLine[],
+  time: number,
+  linesPerBlock = 2,
+): CaptionLine[] {
+  if (!lines.length) return [];
+  const current = activeLineAt(lines, time);
+  if (!current) return lines.slice(0, Math.max(1, linesPerBlock));
+  const idx = Math.max(0, lines.indexOf(current));
+  const size = Math.max(1, linesPerBlock);
+  const start = Math.floor(idx / size) * size;
+  return lines.slice(start, start + size);
+}
+
 export function boxMetrics(style: CaptionStyle, scale: number) {
   return {
     padX: Math.max(0, style["box-pad-x"] * scale),
@@ -72,6 +127,11 @@ export function boxMetrics(style: CaptionStyle, scale: number) {
     radius: Math.max(0, style["box-radius"] * scale),
     gap: Math.max(0, style["box-gap"] * scale),
   };
+}
+
+export function stackGap(style: CaptionStyle, scale: number): number {
+  if (style["has-box"]) return boxMetrics(style, scale).gap;
+  return Math.max(4, style["font-size"] * scale * 0.16);
 }
 
 export function captionTextStyle(style: CaptionStyle, scale: number): CSSProperties {
