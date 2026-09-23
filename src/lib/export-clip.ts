@@ -1,4 +1,5 @@
 import type { CaptionStyle } from "./schema";
+import { fontWeightFor } from "./schema";
 import {
   activeBlockAt,
   activeLineAt,
@@ -60,10 +61,12 @@ function drawLine(
   scale: number,
 ): number {
   const fontSize = Math.max(12, style["font-size"] * scale);
-  const font = `800 ${fontSize}px "${style["font-family"]}", sans-serif`;
+  const weight = fontWeightFor(style["font-family"]);
+  const font = `${style.italic ? "italic " : ""}${weight} ${fontSize}px "${style["font-family"]}", sans-serif`;
   const stroke = style["has-box"] ? 0 : Math.max(0, style["outline-width"] * scale);
   const shadow = style["has-box"] ? 0 : Math.max(0, style["shadow-offset"] * scale);
   const box = boxMetrics(style, scale);
+  const chipWord = !style["has-box"] && style["box-radius"] > 0;
   ctx.font = font;
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
@@ -73,9 +76,15 @@ function drawLine(
   ctx.strokeStyle = style["outline-color"];
 
   const gap = ctx.measureText(" ").width;
-  const total = parts.reduce((n, p, i) => n + ctx.measureText(p.text).width + (i ? gap : 0), 0);
-  const lineH = style["has-box"] ? fontSize + box.padY * 2 : fontSize * 1.1;
-  let textX = (canvasW - total) / 2;
+  const widths = parts.map((p) => {
+    const w = ctx.measureText(p.text).width;
+    return chipWord && p.active ? w + box.padX * 2 : w;
+  });
+  const total = widths.reduce((n, w, i) => n + w + (i ? gap : 0), 0);
+  const lineH = style["has-box"] || chipWord
+    ? fontSize + (chipWord ? box.padY * 2 : box.padY * 2)
+    : fontSize * 1.1;
+  let cursor = (canvasW - total) / 2;
   let textY = y;
 
   if (style["has-box"]) {
@@ -83,11 +92,18 @@ function drawLine(
     const boxX = (canvasW - boxW) / 2;
     ctx.fillStyle = highlightLine ? style["word-box-color"] : style["box-color"];
     fillRoundRect(ctx, boxX, y, boxW, lineH, box.radius);
-    textX = boxX + box.padX;
+    cursor = boxX + box.padX;
     textY = y + box.padY;
   }
 
-  parts.forEach((part) => {
+  parts.forEach((part, i) => {
+    let textX = cursor;
+    if (chipWord && part.active) {
+      ctx.fillStyle = style["word-box-color"];
+      fillRoundRect(ctx, cursor, y, widths[i], lineH, box.radius);
+      textX = cursor + box.padX;
+      textY = y + box.padY;
+    }
     ctx.fillStyle = part.active ? style["word-color"] : style["line-color"];
     if (shadow) {
       ctx.shadowColor = style["shadow-color"];
@@ -98,7 +114,7 @@ function drawLine(
     if (stroke > 0) ctx.strokeText(part.text, textX, textY);
     ctx.shadowColor = "transparent";
     ctx.fillText(part.text, textX, textY);
-    textX += ctx.measureText(part.text).width + gap;
+    cursor += widths[i] + gap;
   });
 
   return lineH + (style["has-box"] ? box.gap : fontSize * 0.12);
@@ -294,9 +310,11 @@ async function recordCanvas(params: {
   return new Blob(chunks, { type: mimeType });
 }
 
-async function readyFont(family: string) {
+async function readyFont(style: CaptionStyle) {
   try {
-    await document.fonts.load(`800 72px "${family}"`);
+    const weight = fontWeightFor(style["font-family"]);
+    const spec = `${style.italic ? "italic " : ""}${weight} 72px "${style["font-family"]}"`;
+    await document.fonts.load(spec);
     await document.fonts.ready;
   } catch {
     // use fallback
@@ -311,7 +329,7 @@ export async function exportStillClip(params: {
   imageUrl?: string | null;
   onProgress?: (ratio: number) => void;
 }): Promise<Blob> {
-  await readyFont(params.style["font-family"]);
+  await readyFont(params.style);
   const canvas = document.createElement("canvas");
   canvas.width = 1080;
   canvas.height = 1920;
@@ -347,7 +365,7 @@ export async function exportCaptionedClip(params: {
   highlight?: string;
   onProgress?: (ratio: number) => void;
 }): Promise<Blob> {
-  await readyFont(params.style["font-family"]);
+  await readyFont(params.style);
   const video = document.createElement("video");
   video.src = params.src;
   video.playsInline = true;

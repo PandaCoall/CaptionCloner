@@ -4,12 +4,36 @@ const hexColor = z
   .string()
   .regex(/^#[0-9A-Fa-f]{6}$/, "must be a 6-digit hex colour with a leading #");
 
-export const CAPTION_FONTS = ["Montserrat", "Poppins", "Inter", "Anton", "Archivo"] as const;
+export const CAPTION_FONTS = [
+  "Montserrat",
+  "Poppins",
+  "Inter",
+  "Anton",
+  "Archivo",
+  "Bebas Neue",
+  "Oswald",
+  "Bangers",
+  "Barlow Condensed",
+] as const;
+
+export function fontWeightFor(family: string): number {
+  if (family === "Bebas Neue" || family === "Anton" || family === "Bangers") return 400;
+  if (family === "Oswald" || family === "Barlow Condensed") return 700;
+  return 800;
+}
+
+export function fontTracking(family: string): string {
+  if (family === "Bebas Neue") return "0.06em";
+  if (family === "Oswald" || family === "Barlow Condensed") return "0.04em";
+  if (family === "Anton" || family === "Bangers") return "0.02em";
+  return "-0.02em";
+}
 
 export const captionStyleSchema = z
   .object({
     "font-family": z.string().min(1),
     "font-size": z.number(),
+    italic: z.boolean(),
     "line-color": hexColor,
     "word-color": hexColor,
     "outline-color": hexColor,
@@ -71,8 +95,9 @@ export const EXTRACTION_PROMPT = `You are reading a reference frame from a short
 Keys:
 - caption: exact on-screen caption. Use \\n between visually stacked lines (each bar or pill is its own line)
 - highlight: the single word that is accented (different fill, plate colour, or both); if none, use the last word
-- font-family: closest of Montserrat, Poppins, Inter, Anton, Archivo
+- font-family: closest of Montserrat, Poppins, Inter, Anton, Archivo, Bebas Neue, Oswald, Bangers, Barlow Condensed
 - font-size: pixels on a 1080x1920 canvas
+- italic: true if the type is slanted / oblique
 - line-color: hex of the non-highlighted words
 - word-color: hex of the highlighted word
 - outline-color: hex stroke (use #000000 if none)
@@ -100,8 +125,9 @@ export const BOXED_GRADIENT =
   "linear-gradient(160deg, #16122e 0%, #3a1233 48%, #6b1528 100%)";
 
 export const DEFAULT_STYLE: CaptionStyle = {
-  "font-family": "Anton",
+  "font-family": "Montserrat",
   "font-size": 78,
+  italic: false,
   "line-color": "#FFFFFF",
   "word-color": "#F5E600",
   "outline-color": "#000000",
@@ -124,6 +150,7 @@ export const DEFAULT_STYLE: CaptionStyle = {
 export const BARS_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 72,
+  italic: false,
   "line-color": "#FFFFFF",
   "word-color": "#FFFFFF",
   "outline-color": "#000000",
@@ -146,6 +173,7 @@ export const BARS_STYLE: CaptionStyle = {
 export const PILLS_STYLE: CaptionStyle = {
   "font-family": "Montserrat",
   "font-size": 64,
+  italic: false,
   "line-color": "#FFFFFF",
   "word-color": "#F5E600",
   "outline-color": "#000000",
@@ -168,6 +196,7 @@ export const PILLS_STYLE: CaptionStyle = {
 export const GREEN_POP_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 84,
+  italic: false,
   "line-color": "#FFFFFF",
   "word-color": "#00E31A",
   "outline-color": "#000000",
@@ -190,6 +219,7 @@ export const GREEN_POP_STYLE: CaptionStyle = {
 export const RED_WORD_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 88,
+  italic: false,
   "line-color": "#FFFFFF",
   "word-color": "#FF1A1A",
   "outline-color": "#000000",
@@ -212,6 +242,7 @@ export const RED_WORD_STYLE: CaptionStyle = {
 export const THICK_OUTLINE_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 76,
+  italic: false,
   "line-color": "#FFFFFF",
   "word-color": "#FFFFFF",
   "outline-color": "#000000",
@@ -230,6 +261,78 @@ export const THICK_OUTLINE_STYLE: CaptionStyle = {
   "box-pad-y": 14,
   "box-gap": 10,
 };
+
+export const NEWS_CONDENSED_STYLE: CaptionStyle = {
+  "font-family": "Bebas Neue",
+  "font-size": 92,
+  italic: false,
+  "line-color": "#111111",
+  "word-color": "#111111",
+  "outline-color": "#F7F4EC",
+  "outline-width": 5,
+  "shadow-color": "#000000",
+  "shadow-offset": 0,
+  "max-words-per-line": 3,
+  position: "custom-position",
+  x: 0,
+  y: 820,
+  "has-box": false,
+  "box-color": "#F7F4EC",
+  "word-box-color": "#FFFFFF",
+  "box-radius": 4,
+  "box-pad-x": 10,
+  "box-pad-y": 4,
+  "box-gap": 8,
+};
+
+export const LIME_ITALIC_STYLE: CaptionStyle = {
+  "font-family": "Oswald",
+  "font-size": 82,
+  italic: true,
+  "line-color": "#D8FF1A",
+  "word-color": "#E8FF3D",
+  "outline-color": "#000000",
+  "outline-width": 12,
+  "shadow-color": "#000000",
+  "shadow-offset": 0,
+  "max-words-per-line": 3,
+  position: "custom-position",
+  x: 0,
+  y: 1180,
+  "has-box": false,
+  "box-color": "#000000",
+  "word-box-color": "#E8FF3D",
+  "box-radius": 0,
+  "box-pad-x": 28,
+  "box-pad-y": 14,
+  "box-gap": 10,
+};
+
+export const GOLD_ITALIC_STYLE: CaptionStyle = {
+  "font-family": "Oswald",
+  "font-size": 86,
+  italic: true,
+  "line-color": "#FFD000",
+  "word-color": "#FFE14A",
+  "outline-color": "#000000",
+  "outline-width": 13,
+  "shadow-color": "#000000",
+  "shadow-offset": 0,
+  "max-words-per-line": 3,
+  position: "custom-position",
+  x: 0,
+  y: 1240,
+  "has-box": false,
+  "box-color": "#000000",
+  "word-box-color": "#FFE14A",
+  "box-radius": 0,
+  "box-pad-x": 28,
+  "box-pad-y": 14,
+  "box-gap": 10,
+};
+
+export const NEWS_BANNER_GRADIENT =
+  "linear-gradient(115deg, #F4F0E6 0%, #F4F0E6 46%, #E31C23 46.2%, #E31C23 58%, #0B1C3D 58.2%)";
 
 export const BUILT_IN_LOOKS: StyleLook[] = [
   {
@@ -263,6 +366,30 @@ export const BUILT_IN_LOOKS: StyleLook[] = [
     background: BOXED_GRADIENT,
     caption: "ALLEGEDLY BEING\nLINKED BACK",
     highlight: "LINKED",
+  },
+  {
+    id: "news-condensed",
+    name: "News condensed",
+    style: NEWS_CONDENSED_STYLE,
+    background: NEWS_BANNER_GRADIENT,
+    caption: "FARM WORKER WITH\nPARKINSON'S?",
+    highlight: "WITH",
+  },
+  {
+    id: "lime-italic",
+    name: "Lime italic",
+    style: LIME_ITALIC_STYLE,
+    background: BOXED_GRADIENT,
+    caption: "A GYNECOLOGIST AT",
+    highlight: "GYNECOLOGIST",
+  },
+  {
+    id: "gold-italic",
+    name: "Gold italic",
+    style: GOLD_ITALIC_STYLE,
+    background: BOXED_GRADIENT,
+    caption: "AFTER LINKS TO",
+    highlight: "LINKS",
   },
   {
     id: "bars",
@@ -345,6 +472,12 @@ function toBool(value: unknown): boolean | undefined {
 
 function closestFont(value: string): string {
   const lower = value.toLowerCase();
+  if (lower.includes("impact") || lower.includes("bebas") || lower.includes("compressed")) {
+    return "Bebas Neue";
+  }
+  if (lower.includes("oswald") || lower.includes("grotesk")) return "Oswald";
+  if (lower.includes("bangers") || lower.includes("comic")) return "Bangers";
+  if (lower.includes("barlow")) return "Barlow Condensed";
   const hit = CAPTION_FONTS.find((font) => lower.includes(font.toLowerCase()));
   return hit ?? "Montserrat";
 }
@@ -389,6 +522,8 @@ export function coerceExtracted(raw: unknown): unknown {
 
   const boxed = toBool(src["has-box"] ?? src.hasBox ?? src.boxed ?? src.box);
   next["has-box"] = boxed === true;
+  const italic = toBool(src.italic ?? src.oblique ?? src.slanted);
+  next.italic = italic === true;
 
   if (typeof next["font-size"] !== "number") next["font-size"] = 72;
   if (typeof next["max-words-per-line"] !== "number") next["max-words-per-line"] = 2;

@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { CaptionStyle } from "./schema";
+import { fontTracking, fontWeightFor } from "./schema";
 import type { TimedWord } from "./transcribe";
 
 export type CaptionLine = {
@@ -141,9 +142,10 @@ export function captionTextStyle(style: CaptionStyle, scale: number): CSSPropert
   return {
     fontFamily: `"${style["font-family"]}", sans-serif`,
     fontSize: `${style["font-size"] * scale}px`,
-    fontWeight: 800,
+    fontWeight: fontWeightFor(style["font-family"]),
+    fontStyle: style.italic ? "italic" : "normal",
     lineHeight: 1,
-    letterSpacing: style["font-family"] === "Anton" ? "0.02em" : "-0.02em",
+    letterSpacing: fontTracking(style["font-family"]),
     textTransform: "uppercase" as const,
     WebkitTextStroke: stroke ? `${stroke}px ${style["outline-color"]}` : "0",
     paintOrder: "stroke fill",
@@ -170,4 +172,8 @@ export function plateStyle(
 
 export function normalizeWord(value: string): string {
   return value.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+export function chipHighlight(style: CaptionStyle): boolean {
+  return !style["has-box"] && style["box-radius"] > 0;
 }

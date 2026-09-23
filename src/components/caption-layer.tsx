@@ -5,6 +5,7 @@ import {
   activeBlockAt,
   activeLineAt,
   captionTextStyle,
+  chipHighlight,
   groupTimedLines,
   normalizeWord,
   plateStyle,
@@ -37,19 +38,32 @@ function CaptionBlock({
             className="inline-block max-w-full"
             style={plateStyle(style, scale, highlightLine)}
           >
-            {line.map((word, wi) => (
+            {line.map((word, wi) => {
+              const accented = normalizeWord(word) === accent;
+              const chip = chipHighlight(style) && accented;
+              const box = chip
+                ? {
+                    background: style["word-box-color"],
+                    borderRadius: Math.max(0, style["box-radius"] * scale),
+                    padding: `${style["box-pad-y"] * scale}px ${style["box-pad-x"] * scale}px`,
+                    margin: `0 ${2 * scale}px`,
+                  }
+                : undefined;
+              return (
               <span
                 key={`${li}-${wi}`}
                 style={{
                   ...wordStyle,
+                  ...box,
                   color:
-                    normalizeWord(word) === accent ? style["word-color"] : style["line-color"],
+                    accented ? style["word-color"] : style["line-color"],
                 }}
               >
                 {word}
-                {wi < line.length - 1 ? " " : ""}
+                {wi < line.length - 1 && !chip ? " " : ""}
               </span>
-            ))}
+              );
+            })}
           </span>
         );
       })}
@@ -119,18 +133,31 @@ export function LiveCaptionOverlay({
               className="inline-block max-w-full"
               style={plateStyle(style, scale, highlightLine)}
             >
-              {line.words.map((word, i) => (
+              {line.words.map((word, i) => {
+                const on = current === word;
+                const chip = chipHighlight(style) && on;
+                const box = chip
+                  ? {
+                      background: style["word-box-color"],
+                      borderRadius: Math.max(0, style["box-radius"] * scale),
+                      padding: `${style["box-pad-y"] * scale}px ${style["box-pad-x"] * scale}px`,
+                      margin: `0 ${2 * scale}px`,
+                    }
+                  : undefined;
+                return (
                 <span
                   key={`${word.start}-${i}`}
                   style={{
                     ...wordStyle,
-                    color: current === word ? style["word-color"] : style["line-color"],
+                    ...box,
+                    color: on ? style["word-color"] : style["line-color"],
                   }}
                 >
                   {word.text}
-                  {i < line.words.length - 1 ? " " : ""}
+                  {i < line.words.length - 1 && !chip ? " " : ""}
                 </span>
-              ))}
+                );
+              })}
             </span>
           );
         })}

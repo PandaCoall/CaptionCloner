@@ -113,6 +113,18 @@ export function StylePanel({
               </button>
             ))}
           </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => patch("italic", !style.italic)}
+              className={cn(
+                "h-11 rounded-md px-3 text-sm",
+                style.italic ? "bg-accent text-accent-fg" : "bg-subtle text-fg shadow-[var(--shadow-border)]",
+              )}
+            >
+              Italic
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

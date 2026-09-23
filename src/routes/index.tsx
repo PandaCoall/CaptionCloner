@@ -15,8 +15,8 @@ import {
   triggerDownload,
 } from "@/lib/export-clip";
 import {
-  BARS_STYLE,
-  BOXED_GRADIENT,
+  DEFAULT_STYLE,
+  FALLBACK_GRADIENT,
   normalizeStyle,
   type CaptionStyle,
   type StyleLook,
@@ -35,11 +35,11 @@ function Home() {
   const lastImage = useRef<File | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [styleReady, setStyleReady] = useState(true);
-  const [style, setStyle] = useState<CaptionStyle>(BARS_STYLE);
-  const [background, setBackground] = useState(BOXED_GRADIENT);
-  const [caption, setCaption] = useState("STRUGGLE WITH\nANXIETY\nDEPRESSION");
-  const [highlight, setHighlight] = useState("DEPRESSION");
-  const [activeLook, setActiveLook] = useState<string | null>("Black / red bars");
+  const [style, setStyle] = useState<CaptionStyle>(DEFAULT_STYLE);
+  const [background, setBackground] = useState(FALLBACK_GRADIENT);
+  const [caption, setCaption] = useState("YOUR PRIVATE\nVIEWING TODAY");
+  const [highlight, setHighlight] = useState("VIEWING");
+  const [activeLook, setActiveLook] = useState<string | null>("Outline type");
   const [saved, setSaved] = useState<SavedStyle[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
@@ -251,11 +251,11 @@ function Home() {
     setWords([]);
     setTranscript("");
     setStyleReady(true);
-    setStyle(BARS_STYLE);
-    setBackground(BOXED_GRADIENT);
-    setCaption("STRUGGLE WITH\nANXIETY\nDEPRESSION");
-    setHighlight("DEPRESSION");
-    setActiveLook("Black / red bars");
+    setStyle(DEFAULT_STYLE);
+    setBackground(FALLBACK_GRADIENT);
+    setCaption("YOUR PRIVATE\nVIEWING TODAY");
+    setHighlight("VIEWING");
+    setActiveLook("Outline type");
     setError(null);
     setExportProgress(0);
   }
