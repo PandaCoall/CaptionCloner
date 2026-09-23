@@ -177,3 +177,20 @@ export function normalizeWord(value: string): string {
 export function chipHighlight(style: CaptionStyle): boolean {
   return !style["has-box"] && style["box-radius"] > 0;
 }
+
+export function motionFrame(
+  kind: CaptionStyle["animation"],
+  elapsed: number,
+): { scale: number; opacity: number } {
+  if (kind === "none" || elapsed < 0) return { scale: 1, opacity: 1 };
+  const dur = kind === "punch" ? 0.16 : 0.28;
+  const t = Math.min(1, Math.max(0, elapsed / dur));
+  if (kind === "pop") {
+    const c1 = 1.55;
+    const c3 = c1 + 1;
+    const eased = 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2;
+    return { scale: 0.32 + 0.68 * eased, opacity: Math.min(1, t * 2.4) };
+  }
+  const slam = 1 - (1 - t) ** 3;
+  return { scale: 1.62 + (1 - 1.62) * slam, opacity: Math.min(1, t * 5) };
+}

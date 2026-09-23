@@ -5,6 +5,7 @@ import {
   activeLineAt,
   boxMetrics,
   groupTimedLines,
+  motionFrame,
   normalizeWord,
   wrapWords,
   type CaptionLine,
@@ -59,6 +60,7 @@ function drawLine(
   canvasW: number,
   y: number,
   scale: number,
+  elapsed: number,
 ): number {
   const fontSize = Math.max(12, style["font-size"] * scale);
   const weight = fontWeightFor(style["font-family"]);
@@ -82,8 +84,16 @@ function drawLine(
   });
   const total = widths.reduce((n, w, i) => n + w + (i ? gap : 0), 0);
   const lineH = style["has-box"] || chipWord
-    ? fontSize + (chipWord ? box.padY * 2 : box.padY * 2)
+    ? fontSize + box.padY * 2
     : fontSize * 1.1;
+  const motion = motionFrame(style.animation, elapsed);
+  ctx.save();
+  const cx = canvasW / 2;
+  const cy = y + lineH / 2;
+  ctx.translate(cx, cy);
+  ctx.scale(motion.scale, motion.scale);
+  ctx.globalAlpha = motion.opacity;
+  ctx.translate(-cx, -cy);
   let cursor = (canvasW - total) / 2;
   let textY = y;
 
@@ -117,6 +127,7 @@ function drawLine(
     cursor += widths[i] + gap;
   });
 
+  ctx.restore();
   return lineH + (style["has-box"] ? box.gap : fontSize * 0.12);
 }
 
@@ -139,7 +150,7 @@ function drawCaptionStack(
       text: word.toUpperCase(),
       active: normalizeWord(word) === accent,
     }));
-    y += drawLine(ctx, style, parts, highlightLine, canvasW, y, scale);
+    y += drawLine(ctx, style, parts, highlightLine, canvasW, y, scale, (performance.now() / 1000) % 1.4);
   }
   ctx.restore();
 }
@@ -165,7 +176,7 @@ function drawCaptions(
       text: w.text.toUpperCase(),
       active: Boolean(current && w === current),
     }));
-    y += drawLine(ctx, style, parts, Boolean(current), canvasW, y, scale);
+    y += drawLine(ctx, style, parts, Boolean(current), canvasW, y, scale, time - line.start);
   }
   ctx.restore();
 }

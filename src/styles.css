@@ -66,6 +66,55 @@ p {
   }
 }
 
+@keyframes caption-pop {
+  0% { transform: scale(0.32); opacity: 0; }
+  62% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes caption-punch {
+  0% { transform: scale(1.62); opacity: 0; }
+  45% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes caption-pop-loop {
+  0%, 72% { transform: scale(1); opacity: 1; }
+  74% { transform: scale(0.32); opacity: 0; }
+  88% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes caption-punch-loop {
+  0%, 72% { transform: scale(1); opacity: 1; }
+  74% { transform: scale(1.62); opacity: 0; }
+  84% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.caption-motion-pop,
+.caption-motion-punch,
+.caption-motion-pop-loop,
+.caption-motion-punch-loop {
+  transform-origin: center center;
+}
+
+.caption-motion-pop {
+  animation: caption-pop 0.28s cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+.caption-motion-punch {
+  animation: caption-punch 0.16s cubic-bezier(0.15, 0.9, 0.2, 1) both;
+}
+
+.caption-motion-pop-loop {
+  animation: caption-pop-loop 1.5s ease-out infinite;
+}
+
+.caption-motion-punch-loop {
+  animation: caption-punch-loop 1.35s ease-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -51,6 +51,7 @@ export const captionStyleSchema = z
     "box-pad-x": z.number(),
     "box-pad-y": z.number(),
     "box-gap": z.number(),
+    animation: z.enum(["none", "pop", "punch"]),
   })
   .strict();
 
@@ -128,6 +129,7 @@ export const DEFAULT_STYLE: CaptionStyle = {
   "font-family": "Montserrat",
   "font-size": 78,
   italic: false,
+  animation: "none",
   "line-color": "#FFFFFF",
   "word-color": "#F5E600",
   "outline-color": "#000000",
@@ -151,6 +153,7 @@ export const BARS_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 72,
   italic: false,
+  animation: "none",
   "line-color": "#FFFFFF",
   "word-color": "#FFFFFF",
   "outline-color": "#000000",
@@ -174,6 +177,7 @@ export const PILLS_STYLE: CaptionStyle = {
   "font-family": "Montserrat",
   "font-size": 64,
   italic: false,
+  animation: "none",
   "line-color": "#FFFFFF",
   "word-color": "#F5E600",
   "outline-color": "#000000",
@@ -197,6 +201,7 @@ export const GREEN_POP_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 84,
   italic: false,
+  animation: "none",
   "line-color": "#FFFFFF",
   "word-color": "#00E31A",
   "outline-color": "#000000",
@@ -220,6 +225,7 @@ export const RED_WORD_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 88,
   italic: false,
+  animation: "none",
   "line-color": "#FFFFFF",
   "word-color": "#FF1A1A",
   "outline-color": "#000000",
@@ -243,6 +249,7 @@ export const THICK_OUTLINE_STYLE: CaptionStyle = {
   "font-family": "Anton",
   "font-size": 76,
   italic: false,
+  animation: "none",
   "line-color": "#FFFFFF",
   "word-color": "#FFFFFF",
   "outline-color": "#000000",
@@ -266,6 +273,7 @@ export const NEWS_CONDENSED_STYLE: CaptionStyle = {
   "font-family": "Bebas Neue",
   "font-size": 92,
   italic: false,
+  animation: "none",
   "line-color": "#111111",
   "word-color": "#111111",
   "outline-color": "#F7F4EC",
@@ -289,6 +297,7 @@ export const LIME_ITALIC_STYLE: CaptionStyle = {
   "font-family": "Oswald",
   "font-size": 82,
   italic: true,
+  animation: "none",
   "line-color": "#D8FF1A",
   "word-color": "#E8FF3D",
   "outline-color": "#000000",
@@ -312,6 +321,7 @@ export const GOLD_ITALIC_STYLE: CaptionStyle = {
   "font-family": "Oswald",
   "font-size": 86,
   italic: true,
+  animation: "none",
   "line-color": "#FFD000",
   "word-color": "#FFE14A",
   "outline-color": "#000000",
@@ -410,9 +420,11 @@ export const BUILT_IN_LOOKS: StyleLook[] = [
 ];
 
 export function normalizeStyle(style: Partial<CaptionStyle> | null | undefined): CaptionStyle {
+  const animation = style?.animation === "pop" || style?.animation === "punch" ? style.animation : "none";
   return {
     ...DEFAULT_STYLE,
     ...style,
+    animation,
     position: "custom-position",
     x: 0,
   };
@@ -524,6 +536,8 @@ export function coerceExtracted(raw: unknown): unknown {
   next["has-box"] = boxed === true;
   const italic = toBool(src.italic ?? src.oblique ?? src.slanted);
   next.italic = italic === true;
+  const motion = src.animation;
+  next.animation = motion === "pop" || motion === "punch" ? motion : "none";
 
   if (typeof next["font-size"] !== "number") next["font-size"] = 72;
   if (typeof next["max-words-per-line"] !== "number") next["max-words-per-line"] = 2;

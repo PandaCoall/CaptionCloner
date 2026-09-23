@@ -1,6 +1,7 @@
 import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { CaptionStyle } from "@/lib/schema";
+import { cn } from "@/lib/utils";
 import {
   activeBlockAt,
   activeLineAt,
@@ -13,6 +14,12 @@ import {
   wrapWords,
 } from "@/lib/caption-layout";
 import type { TimedWord } from "@/lib/transcribe";
+
+function motionClass(style: CaptionStyle, loop: boolean) {
+  if (style.animation === "pop") return loop ? "caption-motion-pop-loop" : "caption-motion-pop";
+  if (style.animation === "punch") return loop ? "caption-motion-punch-loop" : "caption-motion-punch";
+  return undefined;
+}
 
 function CaptionBlock({
   style,
@@ -35,7 +42,7 @@ function CaptionBlock({
         return (
           <span
             key={li}
-            className="inline-block max-w-full"
+            className={cn("inline-block max-w-full", motionClass(style, true))}
             style={plateStyle(style, scale, highlightLine)}
           >
             {line.map((word, wi) => {
@@ -130,7 +137,7 @@ export function LiveCaptionOverlay({
           return (
             <span
               key={`${line.start}-${li}`}
-              className="inline-block max-w-full"
+              className={cn("inline-block max-w-full", motionClass(style, false))}
               style={plateStyle(style, scale, highlightLine)}
             >
               {line.words.map((word, i) => {

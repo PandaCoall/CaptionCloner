@@ -127,6 +127,36 @@ export function StylePanel({
           </div>
         </div>
 
+        <div>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">Motion</p>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["none", "Still"],
+                ["pop", "Pop in"],
+                ["punch", "Punch in"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => patch("animation", id)}
+                className={cn(
+                  "h-11 rounded-md px-3 text-sm",
+                  style.animation === id
+                    ? "bg-accent text-accent-fg"
+                    : "bg-subtle text-fg shadow-[var(--shadow-border)]",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            Applies to every caption line as it appears, including the download.
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <ColorField
             label="Line"
