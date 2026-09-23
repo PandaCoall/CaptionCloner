@@ -14,10 +14,20 @@ export const CAPTION_FONTS = [
   "Oswald",
   "Bangers",
   "Barlow Condensed",
+  "Lilita One",
+  "Fjalla One",
 ] as const;
 
 export function fontWeightFor(family: string): number {
-  if (family === "Bebas Neue" || family === "Anton" || family === "Bangers") return 400;
+  if (
+    family === "Bebas Neue" ||
+    family === "Anton" ||
+    family === "Bangers" ||
+    family === "Lilita One" ||
+    family === "Fjalla One"
+  ) {
+    return 400;
+  }
   if (family === "Oswald" || family === "Barlow Condensed") return 700;
   return 800;
 }
@@ -25,7 +35,8 @@ export function fontWeightFor(family: string): number {
 export function fontTracking(family: string): string {
   if (family === "Bebas Neue") return "0.06em";
   if (family === "Oswald" || family === "Barlow Condensed") return "0.04em";
-  if (family === "Anton" || family === "Bangers") return "0.02em";
+  if (family === "Anton" || family === "Bangers" || family === "Lilita One") return "0.02em";
+  if (family === "Fjalla One") return "0.03em";
   return "-0.02em";
 }
 
@@ -96,7 +107,7 @@ export const EXTRACTION_PROMPT = `You are reading a reference frame from a short
 Keys:
 - caption: exact on-screen caption. Use \\n between visually stacked lines (each bar or pill is its own line)
 - highlight: the single word that is accented (different fill, plate colour, or both); if none, use the last word
-- font-family: closest of Montserrat, Poppins, Inter, Anton, Archivo, Bebas Neue, Oswald, Bangers, Barlow Condensed
+- font-family: closest of Montserrat, Poppins, Inter, Anton, Archivo, Bebas Neue, Oswald, Bangers, Barlow Condensed, Lilita One, Fjalla One
 - font-size: pixels on a 1080x1920 canvas
 - italic: true if the type is slanted / oblique
 - line-color: hex of the non-highlighted words
@@ -341,6 +352,54 @@ export const GOLD_ITALIC_STYLE: CaptionStyle = {
   "box-gap": 10,
 };
 
+export const YELLOW_PUNCH_STYLE: CaptionStyle = {
+  "font-family": "Lilita One",
+  "font-size": 96,
+  italic: true,
+  animation: "none",
+  "line-color": "#F4FF00",
+  "word-color": "#F4FF00",
+  "outline-color": "#000000",
+  "outline-width": 16,
+  "shadow-color": "#000000",
+  "shadow-offset": 0,
+  "max-words-per-line": 2,
+  position: "custom-position",
+  x: 0,
+  y: 980,
+  "has-box": false,
+  "box-color": "#000000",
+  "word-box-color": "#F4FF00",
+  "box-radius": 0,
+  "box-pad-x": 28,
+  "box-pad-y": 14,
+  "box-gap": 10,
+};
+
+export const RED_OUTLINE_STYLE: CaptionStyle = {
+  "font-family": "Fjalla One",
+  "font-size": 78,
+  italic: false,
+  animation: "none",
+  "line-color": "#FFFFFF",
+  "word-color": "#FFFFFF",
+  "outline-color": "#FF1F1F",
+  "outline-width": 10,
+  "shadow-color": "#000000",
+  "shadow-offset": 0,
+  "max-words-per-line": 3,
+  position: "custom-position",
+  x: 0,
+  y: 1120,
+  "has-box": false,
+  "box-color": "#000000",
+  "word-box-color": "#FFFFFF",
+  "box-radius": 0,
+  "box-pad-x": 28,
+  "box-pad-y": 14,
+  "box-gap": 10,
+};
+
 export const NEWS_BANNER_GRADIENT =
   "linear-gradient(115deg, #F4F0E6 0%, #F4F0E6 46%, #E31C23 46.2%, #E31C23 58%, #0B1C3D 58.2%)";
 
@@ -400,6 +459,22 @@ export const BUILT_IN_LOOKS: StyleLook[] = [
     background: BOXED_GRADIENT,
     caption: "AFTER LINKS TO",
     highlight: "LINKS",
+  },
+  {
+    id: "yellow-punch",
+    name: "Yellow punch",
+    style: YELLOW_PUNCH_STYLE,
+    background: "linear-gradient(180deg, #8ec8ea 0%, #d7eef8 55%, #f4f7f2 100%)",
+    caption: "PODRÍAS",
+    highlight: "PODRÍAS",
+  },
+  {
+    id: "red-outline",
+    name: "Red outline",
+    style: RED_OUTLINE_STYLE,
+    background: "linear-gradient(180deg, #3a342c 0%, #1c1916 100%)",
+    caption: "YOU SERVE THIS",
+    highlight: "SERVE",
   },
   {
     id: "bars",
@@ -489,7 +564,8 @@ function closestFont(value: string): string {
   }
   if (lower.includes("oswald") || lower.includes("grotesk")) return "Oswald";
   if (lower.includes("bangers") || lower.includes("comic")) return "Bangers";
-  if (lower.includes("barlow")) return "Barlow Condensed";
+  if (lower.includes("lilita")) return "Lilita One";
+  if (lower.includes("fjalla")) return "Fjalla One";
   const hit = CAPTION_FONTS.find((font) => lower.includes(font.toLowerCase()));
   return hit ?? "Montserrat";
 }
