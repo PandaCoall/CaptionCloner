@@ -4,6 +4,7 @@ import { DropZone } from "@/components/drop-zone";
 import { LooksStrip } from "@/components/looks-strip";
 import { PhoneStage } from "@/components/caption-layer";
 import { DownloadButton } from "@/components/download-button";
+import { N8nSend } from "@/components/n8n-send";
 import { StylePanel } from "@/components/style-panel";
 import { VideoStage } from "@/components/video-stage";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ function Home() {
   const [words, setWords] = useState<TimedWord[]>([]);
   const [transcript, setTranscript] = useState("");
   const [exporting, setExporting] = useState(false);
+  const [sending, setSending] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState<AppError | null>(null);
@@ -133,38 +135,41 @@ function Home() {
     void runTranscribe(file);
   }
 
+  const buildCaption = useCallback(async () => {
+    if (videoUrl && words.length) {
+      return exportCaptionedClip({
+        src: videoUrl,
+        style,
+        words,
+        onProgress: setExportProgress,
+      });
+    }
+    if (videoUrl) {
+      return exportCaptionedClip({
+        src: videoUrl,
+        style,
+        words: [],
+        caption,
+        highlight,
+        onProgress: setExportProgress,
+      });
+    }
+    return exportStillClip({
+      style,
+      caption,
+      highlight,
+      background,
+      imageUrl: previewUrl,
+      onProgress: setExportProgress,
+    });
+  }, [videoUrl, words, style, caption, highlight, background, previewUrl]);
+
   const runExport = useCallback(async () => {
     setError(null);
     setExporting(true);
     setExportProgress(0);
     try {
-      let blob: Blob;
-      if (videoUrl && words.length) {
-        blob = await exportCaptionedClip({
-          src: videoUrl,
-          style,
-          words,
-          onProgress: setExportProgress,
-        });
-      } else if (videoUrl) {
-        blob = await exportCaptionedClip({
-          src: videoUrl,
-          style,
-          words: [],
-          caption,
-          highlight,
-          onProgress: setExportProgress,
-        });
-      } else {
-        blob = await exportStillClip({
-          style,
-          caption,
-          highlight,
-          background,
-          imageUrl: previewUrl,
-          onProgress: setExportProgress,
-        });
-      }
+      const blob = await buildCaption();
       setDownloadUrl((prev) => {
         if (prev) URL.revokeObjectURL(prev);
         return triggerDownload(blob, DOWNLOAD_NAME);
@@ -177,7 +182,34 @@ function Home() {
     } finally {
       setExporting(false);
     }
-  }, [videoUrl, words, style, caption, highlight, background, previewUrl]);
+  }, [buildCaption]);
+
+  const sendToN8n = useCallback(
+    async (webhook: string) => {
+      setError(null);
+      setSending(true);
+      setExportProgress(0);
+      try {
+        const blob = await buildCaption();
+        const form = new FormData();
+        form.append("webhook", webhook);
+        form.append("file", blob, DOWNLOAD_NAME);
+        form.append("caption", caption);
+        form.append("highlight", highlight);
+        form.append("animation", style.animation);
+        form.append("look", activeLook || "");
+        const res = await fetch("/api/generate", { method: "POST", body: form });
+        const payload = (await res.json()) as { ok?: boolean; error?: string; status?: number };
+        if (!res.ok || !payload.ok) {
+          throw new Error(payload.error || `n8n returned ${payload.status || res.status}`);
+        }
+        return "n8n accepted the video. Save the file binary into your folder in that workflow.";
+      } finally {
+        setSending(false);
+      }
+    },
+    [buildCaption, caption, highlight, style.animation, activeLook],
+  );
 
   function retry() {
     if (error?.retry === "extract" && lastImage.current) void runExtract(lastImage.current);
@@ -365,11 +397,12 @@ function Home() {
             ready={styleReady}
           />
           <DownloadButton
-            exporting={exporting}
+            exporting={exporting || sending}
             exportProgress={exportProgress}
             downloadUrl={downloadUrl}
             onDownload={() => void runExport()}
           />
+          <N8nSend busy={exporting || sending} onSend={sendToN8n} />
         </aside>
       </div>
     </main>
