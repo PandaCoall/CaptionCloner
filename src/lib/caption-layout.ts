@@ -132,7 +132,13 @@ export function boxMetrics(style: CaptionStyle, scale: number) {
 
 export function stackGap(style: CaptionStyle, scale: number): number {
   if (style["has-box"]) return boxMetrics(style, scale).gap;
-  return Math.max(4, style["font-size"] * scale * 0.16);
+  const stroke = Math.max(0, style["outline-width"] * scale);
+  return Math.max(8, style["font-size"] * scale * 0.28 + stroke * 0.35);
+}
+
+export function wordGapPx(style: CaptionStyle, scale: number, spaceWidth: number): number {
+  const stroke = style["has-box"] ? 0 : Math.max(0, style["outline-width"] * scale);
+  return Math.max(spaceWidth * 1.45, stroke * 1.7);
 }
 
 export function captionTextStyle(style: CaptionStyle, scale: number): CSSProperties {
@@ -144,7 +150,7 @@ export function captionTextStyle(style: CaptionStyle, scale: number): CSSPropert
     fontSize: `${style["font-size"] * scale}px`,
     fontWeight: fontWeightFor(style["font-family"]),
     fontStyle: style.italic ? "italic" : "normal",
-    lineHeight: 1,
+    lineHeight: 1.18,
     letterSpacing: fontTracking(style["font-family"]),
     textTransform: "uppercase" as const,
     WebkitTextStroke: stroke ? `${stroke}px ${style["outline-color"]}` : "0",

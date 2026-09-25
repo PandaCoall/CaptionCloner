@@ -33,11 +33,10 @@ export function fontWeightFor(family: string): number {
 }
 
 export function fontTracking(family: string): string {
-  if (family === "Bebas Neue") return "0.06em";
-  if (family === "Oswald" || family === "Barlow Condensed") return "0.04em";
-  if (family === "Anton" || family === "Bangers" || family === "Lilita One") return "0.02em";
-  if (family === "Fjalla One") return "0.03em";
-  return "-0.02em";
+  if (family === "Bebas Neue") return "0.08em";
+  if (family === "Oswald" || family === "Barlow Condensed" || family === "Fjalla One") return "0.06em";
+  if (family === "Anton" || family === "Bangers" || family === "Lilita One") return "0.045em";
+  return "0.04em";
 }
 
 export const captionStyleSchema = z

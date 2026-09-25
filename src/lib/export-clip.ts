@@ -1,5 +1,5 @@
 import type { CaptionStyle } from "./schema";
-import { fontWeightFor } from "./schema";
+import { fontTracking, fontWeightFor } from "./schema";
 import {
   activeBlockAt,
   activeLineAt,
@@ -7,6 +7,7 @@ import {
   groupTimedLines,
   motionFrame,
   normalizeWord,
+  wordGapPx,
   wrapWords,
   type CaptionLine,
 } from "./caption-layout";
@@ -70,6 +71,7 @@ function drawLine(
   const box = boxMetrics(style, scale);
   const chipWord = !style["has-box"] && style["box-radius"] > 0;
   ctx.font = font;
+  ctx.letterSpacing = fontTracking(style["font-family"]);
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.lineJoin = "round";
@@ -77,7 +79,7 @@ function drawLine(
   ctx.lineWidth = Math.max(1, stroke * 2);
   ctx.strokeStyle = style["outline-color"];
 
-  const gap = ctx.measureText(" ").width;
+  const gap = wordGapPx(style, scale, ctx.measureText(" ").width);
   const widths = parts.map((p) => {
     const w = ctx.measureText(p.text).width;
     return chipWord && p.active ? w + box.padX * 2 : w;
@@ -85,7 +87,7 @@ function drawLine(
   const total = widths.reduce((n, w, i) => n + w + (i ? gap : 0), 0);
   const lineH = style["has-box"] || chipWord
     ? fontSize + box.padY * 2
-    : fontSize * 1.1;
+    : fontSize * 1.22;
   const motion = motionFrame(style.animation, elapsed);
   ctx.save();
   const cx = canvasW / 2;

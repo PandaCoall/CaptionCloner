@@ -11,6 +11,7 @@ import {
   normalizeWord,
   plateStyle,
   stackGap,
+  wordGapPx,
   wrapWords,
 } from "@/lib/caption-layout";
 import type { TimedWord } from "@/lib/transcribe";
@@ -56,18 +57,19 @@ function CaptionBlock({
                     margin: `0 ${2 * scale}px`,
                   }
                 : undefined;
+              const gap = wordGapPx(style, scale, style["font-size"] * scale * 0.28);
               return (
               <span
                 key={`${li}-${wi}`}
                 style={{
                   ...wordStyle,
                   ...box,
+                  marginRight: wi < line.length - 1 ? gap : 0,
                   color:
                     accented ? style["word-color"] : style["line-color"],
                 }}
               >
                 {word}
-                {wi < line.length - 1 && !chip ? " " : ""}
               </span>
               );
             })}
@@ -148,20 +150,20 @@ export function LiveCaptionOverlay({
                       background: style["word-box-color"],
                       borderRadius: Math.max(0, style["box-radius"] * scale),
                       padding: `${style["box-pad-y"] * scale}px ${style["box-pad-x"] * scale}px`,
-                      margin: `0 ${2 * scale}px`,
                     }
                   : undefined;
+                const wordGap = wordGapPx(style, scale, style["font-size"] * scale * 0.28);
                 return (
                 <span
                   key={`${word.start}-${i}`}
                   style={{
                     ...wordStyle,
                     ...box,
+                    marginRight: i < line.words.length - 1 ? wordGap : 0,
                     color: on ? style["word-color"] : style["line-color"],
                   }}
                 >
                   {word.text}
-                  {i < line.words.length - 1 && !chip ? " " : ""}
                 </span>
                 );
               })}
